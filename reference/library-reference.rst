@@ -6,7 +6,7 @@ Speech Recognition Library Reference
 
 Creates a new ``Microphone`` instance, which represents a physical microphone on the computer. Subclass of ``AudioSource``.
 
-This will throw an ``AttributeError`` if you don't have PyAudio 0.2.11 or later installed.
+This will throw an ``AttributeError`` if you don't have PyAudio (0.2.11 or later) installed.
 
 If ``device_index`` is unspecified or ``None``, the default microphone is used as the audio source. Otherwise, ``device_index`` should be the index of the device to use for audio input.
 
@@ -163,26 +163,12 @@ If ``duration`` is not specified, then it will record until there is no more aud
 ``recognizer_instance.adjust_for_ambient_noise(source: AudioSource, duration: float = 1) -> None``
 --------------------------------------------------------------------------------------------------
 
-Adjusts the energy threshold dynamically using audio from ``source`` (an ``AudioSource`` instance) to account for ambient noise.
+.. autofunction:: speech_recognition.Recognizer.adjust_for_ambient_noise
 
-Intended to calibrate the energy threshold with the ambient energy level. Should be used on periods of audio without speech - will stop early if any speech is detected.
+``recognizer_instance.listen(source: AudioSource, timeout: Union[float, None] = None, phrase_time_limit: Union[float, None] = None, snowboy_configuration: Union[Tuple[str, Iterable[str]], None] = None, stream: bool = False) -> AudioData``
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-The ``duration`` parameter is the maximum number of seconds that it will dynamically adjust the threshold for before returning. This value should be at least 0.5 in order to get a representative sample of the ambient noise.
-
-``recognizer_instance.listen(source: AudioSource, timeout: Union[float, None] = None, phrase_time_limit: Union[float, None] = None, snowboy_configuration: Union[Tuple[str, Iterable[str]], None] = None) -> AudioData``
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-Records a single phrase from ``source`` (an ``AudioSource`` instance) into an ``AudioData`` instance, which it returns.
-
-This is done by waiting until the audio has an energy above ``recognizer_instance.energy_threshold`` (the user has started speaking), and then recording until it encounters ``recognizer_instance.pause_threshold`` seconds of non-speaking or there is no more audio input. The ending silence is not included.
-
-The ``timeout`` parameter is the maximum number of seconds that this will wait for a phrase to start before giving up and throwing an ``speech_recognition.WaitTimeoutError`` exception. If ``timeout`` is ``None``, there will be no wait timeout.
-
-The ``phrase_time_limit`` parameter is the maximum number of seconds that this will allow a phrase to continue before stopping and returning the part of the phrase processed before the time limit was reached. The resulting audio will be the phrase cut off at the time limit. If ``phrase_timeout`` is ``None``, there will be no phrase time limit.
-
-The ``snowboy_configuration`` parameter allows integration with `Snowboy <https://snowboy.kitt.ai/>`__, an offline, high-accuracy, power-efficient hotword recognition engine. When used, this function will pause until Snowboy detects a hotword, after which it will unpause. This parameter should either be ``None`` to turn off Snowboy support, or a tuple of the form ``(SNOWBOY_LOCATION, LIST_OF_HOT_WORD_FILES)``, where ``SNOWBOY_LOCATION`` is the path to the Snowboy root directory, and ``LIST_OF_HOT_WORD_FILES`` is a list of paths to Snowboy hotword configuration files (`*.pmdl` or `*.umdl` format).
-
-This operation will always complete within ``timeout + phrase_timeout`` seconds if both are numbers, either by returning the audio data, or by raising a ``speech_recognition.WaitTimeoutError`` exception.
+.. autofunction:: speech_recognition.Recognizer.listen
 
 ``recognizer_instance.listen_in_background(source: AudioSource, callback: Callable[[Recognizer, AudioData], Any]) -> Callable[bool, None]``
 -------------------------------------------------------------------------------------------------------------------------------------------
@@ -198,17 +184,7 @@ The ``callback`` parameter is a function that should accept two parameters - the
 ``recognizer_instance.recognize_sphinx(audio_data: AudioData, language: str = "en-US", keyword_entries: Union[Iterable[Tuple[str, float]], None] = None, grammar: Union[str, None] = None, show_all: bool = False) -> Union[str, pocketsphinx.pocketsphinx.Decoder]``
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-Performs speech recognition on ``audio_data`` (an ``AudioData`` instance), using CMU Sphinx.
-
-The recognition language is determined by ``language``, an RFC5646 language tag like ``"en-US"`` or ``"en-GB"``, defaulting to US English. Out of the box, only ``en-US`` is supported. See `Notes on using `PocketSphinx <https://github.com/Uberi/speech_recognition/blob/master/reference/pocketsphinx.rst>`__ for information about installing other languages. This document is also included under ``reference/pocketsphinx.rst``. The ``language`` parameter can also be a tuple of filesystem paths, of the form ``(acoustic_parameters_directory, language_model_file, phoneme_dictionary_file)`` - this allows you to load arbitrary Sphinx models.
-
-If specified, the keywords to search for are determined by ``keyword_entries``, an iterable of tuples of the form ``(keyword, sensitivity)``, where ``keyword`` is a phrase, and ``sensitivity`` is how sensitive to this phrase the recognizer should be, on a scale of 0 (very insensitive, more false negatives) to 1 (very sensitive, more false positives) inclusive. If not specified or ``None``, no keywords are used and Sphinx will simply transcribe whatever words it recognizes. Specifying ``keyword_entries`` is more accurate than just looking for those same keywords in non-keyword-based transcriptions, because Sphinx knows specifically what sounds to look for.
-
-Sphinx can also handle FSG or JSGF grammars. The parameter ``grammar`` expects a path to the grammar file. Note that if a JSGF grammar is passed, an FSG grammar will be created at the same location to speed up execution in the next run. If ``keyword_entries`` are passed, content of ``grammar`` will be ignored.
-
-Returns the most likely transcription if ``show_all`` is false (the default). Otherwise, returns the Sphinx ``pocketsphinx.pocketsphinx.Decoder`` object resulting from the recognition.
-
-Raises a ``speech_recognition.UnknownValueError`` exception if the speech is unintelligible. Raises a ``speech_recognition.RequestError`` exception if there are any issues with the Sphinx installation.
+.. autofunction:: speech_recognition.recognizers.pocketsphinx.recognize
 
 ``recognizer_instance.recognize_google(audio_data: AudioData, key: Union[str, None] = None, language: str = "en-US", , pfilter: Union[0, 1], show_all: bool = False) -> Union[str, Dict[str, Any]]``
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -227,20 +203,10 @@ Returns the most likely transcription if ``show_all`` is false (the default). Ot
 
 Raises a ``speech_recognition.UnknownValueError`` exception if the speech is unintelligible. Raises a ``speech_recognition.RequestError`` exception if the speech recognition operation failed, if the key isn't valid, or if there is no internet connection.
 
-``recognizer_instance.recognize_google_cloud(audio_data: AudioData, credentials_json: Union[str, None] = None, language: str = "en-US", preferred_phrases: Union[Iterable[str], None] = None, show_all: bool = False) -> Union[str, Dict[str, Any]]``
------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+``recognizer_instance.recognize_google_cloud(audio_data: AudioData, credentials_json_path: Union[str, None] = None, **kwargs) -> Union[str, Dict[str, Any]]``
+-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-Performs speech recognition on ``audio_data`` (an ``AudioData`` instance), using the Google Cloud Speech API.
-
-This function requires a Google Cloud Platform account; see the `Google Cloud Speech API Quickstart <https://cloud.google.com/speech/docs/getting-started>`__ for details and instructions. Basically, create a project, enable billing for the project, enable the Google Cloud Speech API for the project, and set up Service Account Key credentials for the project. The result is a JSON file containing the API credentials. The text content of this JSON file is specified by ``credentials_json``. If not specified, the library will try to automatically `find the default API credentials JSON file <https://developers.google.com/identity/protocols/application-default-credentials>`__.
-
-The recognition language is determined by ``language``, which is a BCP-47 language tag like ``"en-US"`` (US English). A list of supported language tags can be found in the `Google Cloud Speech API documentation <https://cloud.google.com/speech/docs/languages>`__.
-
-If ``preferred_phrases`` is an iterable of phrase strings, those given phrases will be more likely to be recognized over similar-sounding alternatives. This is useful for things like keyword/command recognition or adding new phrases that aren't in Google's vocabulary. Note that the API imposes certain `restrictions on the list of phrase strings <https://cloud.google.com/speech/limits#content>`__.
-
-Returns the most likely transcription if ``show_all`` is False (the default). Otherwise, returns the raw API response as a JSON dictionary.
-
-Raises a ``speech_recognition.UnknownValueError`` exception if the speech is unintelligible. Raises a ``speech_recognition.RequestError`` exception if the speech recognition operation failed, if the credentials aren't valid, or if there is no Internet connection.
+.. autofunction:: speech_recognition.recognizers.google_cloud.recognize
 
 ``recognizer_instance.recognize_wit(audio_data: AudioData, key: str, show_all: bool = False) -> Union[str, Dict[str, Any]]``
 ----------------------------------------------------------------------------------------------------------------------------
@@ -254,21 +220,6 @@ To get the API key for a Wit.ai app, go to the app's overview page, go to the se
 The recognition language is configured in the Wit.ai app settings.
 
 Returns the most likely transcription if ``show_all`` is false (the default). Otherwise, returns the `raw API response <https://wit.ai/docs/http/20141022#get-intent-via-text-link>`__ as a JSON dictionary.
-
-Raises a ``speech_recognition.UnknownValueError`` exception if the speech is unintelligible. Raises a ``speech_recognition.RequestError`` exception if the speech recognition operation failed, if the key isn't valid, or if there is no internet connection.
-
-``recognizer_instance.recognize_bing(audio_data: AudioData, key: str, language: str = "en-US", show_all: bool = False) -> Union[str, Dict[str, Any]]``
-------------------------------------------------------------------------------------------------------------------------------------------------------
-
-Performs speech recognition on ``audio_data`` (an ``AudioData`` instance), using the Microsoft Bing Speech API.
-
-The Microsoft Bing Speech API key is specified by ``key``. Unfortunately, these are not available without `signing up for an account <https://azure.microsoft.com/en-ca/pricing/details/cognitive-services/speech-api/>`__ with Microsoft Azure.
-
-To get the API key, go to the `Microsoft Azure Portal Resources <https://portal.azure.com/>`__ page, go to "All Resources" > "Add" > "See All" > Search "Bing Speech API > "Create", and fill in the form to make a "Bing Speech API" resource. On the resulting page (which is also accessible from the "All Resources" page in the Azure Portal), go to the "Show Access Keys" page, which will have two API keys, either of which can be used for the `key` parameter. Microsoft Bing Speech API keys are 32-character lowercase hexadecimal strings.
-
-The recognition language is determined by ``language``, a BCP-47 language tag like ``"en-US"`` (US English) or ``"fr-FR"`` (International French), defaulting to US English. A list of supported language values can be found in the `API documentation <https://docs.microsoft.com/en-us/azure/cognitive-services/speech/api-reference-rest/bingvoicerecognition#recognition-language>`__ under "Interactive and dictation mode".
-
-Returns the most likely transcription if ``show_all`` is false (the default). Otherwise, returns the `raw API response <https://docs.microsoft.com/en-us/azure/cognitive-services/speech/api-reference-rest/bingvoicerecognition#sample-responses>`__ as a JSON dictionary.
 
 Raises a ``speech_recognition.UnknownValueError`` exception if the speech is unintelligible. Raises a ``speech_recognition.RequestError`` exception if the speech recognition operation failed, if the key isn't valid, or if there is no internet connection.
 
@@ -300,6 +251,36 @@ Returns the most likely transcription if ``show_all`` is false (the default). Ot
 
 Raises a ``speech_recognition.UnknownValueError`` exception if the speech is unintelligible. Raises a ``speech_recognition.RequestError`` exception if the speech recognition operation failed, if the key isn't valid, or if there is no internet connection.
 
+``recognizer_instance.recognize_vosk(audio_data: AudioData, *, verbose: bool = False) -> Union[str, Dict[str, str]]``
+------------------------------------------------------------------------------------------------------------------------------
+
+.. autofunction:: speech_recognition.recognizers.vosk.recognize
+
+``recognizer_instance.recognize_whisper(audio_data: AudioData, model: str="base", show_dict: bool=False, load_options=None, **transcribe_options)``
+---------------------------------------------------------------------------------------------------------------------------------------------------
+
+.. autofunction:: speech_recognition.recognizers.whisper_local.whisper.recognize
+
+``recognizer_instance.recognize_faster_whisper(audio_data: AudioData, model: str="base", show_dict: bool=False, **transcribe_options)``
+---------------------------------------------------------------------------------------------------------------------------------------
+
+.. autofunction:: speech_recognition.recognizers.whisper_local.faster_whisper.recognize
+
+``recognizer_instance.recognize_openai(audio_data: AudioData, model = "whisper-1", **kwargs)``
+----------------------------------------------------------------------------------------------
+
+.. autofunction:: speech_recognition.recognizers.whisper_api.openai.recognize
+
+``recognizer_instance.recognize_groq(audio_data: AudioData, model = "whisper-large-v3-turbo", **kwargs)``
+---------------------------------------------------------------------------------------------------------
+
+.. autofunction:: speech_recognition.recognizers.whisper_api.groq.recognize
+
+``recognizer_instance.recognize_cohere_api(audio_data: AudioData, *, language: str, model = "cohere-transcribe-03-2026")``
+--------------------------------------------------------------------------------------------------------------------------
+
+.. autofunction:: speech_recognition.recognizers.cohere_api.recognize
+
 ``AudioSource``
 ---------------
 
@@ -328,6 +309,30 @@ Usually, instances of this class are obtained from ``recognizer_instance.record`
 Returns a new ``AudioData`` instance, trimmed to a given time interval. In other words, an ``AudioData`` instance with the same audio data except starting at ``start_ms`` milliseconds in and ending ``end_ms`` milliseconds in.
 
 If not specified, ``start_ms`` defaults to the beginning of the audio, and ``end_ms`` defaults to the end.
+
+``audiodata_instance.split(max_bytes: int, *, silence_aware: bool = False) -> list[AudioData]``
+-----------------------------------------------------------------------------------------------
+
+Returns a list of ``AudioData`` chunks whose WAV-serialized size (the output of ``get_wav_data()``) is at most ``max_bytes`` bytes each. This is intended for feeding oversized recordings to APIs that enforce strict upload limits, such as OpenAI's Whisper transcription endpoint (25 MB per request).
+
+If the audio already fits within ``max_bytes``, ``[self]`` is returned unchanged.
+
+When ``silence_aware`` is ``False`` (the default), the audio is split mechanically on sample boundaries. No optional dependency is required.
+
+When ``silence_aware`` is ``True``, chunk boundaries are snapped to nearby silences via ``librosa.effects.split``. The boundary search stays before the size-derived target so the ``max_bytes`` ceiling is preserved; if no silence is found within the look-back window, the chunk is cut at the same boundary the fixed-time mode would use. This mode requires the ``audio-split`` optional extra (``pip install SpeechRecognition[audio-split]``); ``SetupError`` is raised if ``librosa`` and ``numpy`` are not importable or fail to initialize at runtime.
+
+Raises ``ValueError`` if ``max_bytes`` is smaller than the WAV header overhead (44 bytes) plus one sample, or if ``len(frame_data)`` is not a multiple of ``sample_width`` (sample-aligned input is required so the byte budget is a hard ceiling).
+
+Example usage with the OpenAI Transcription API::
+
+    import speech_recognition as sr
+
+    audio = sr.AudioData.from_file("large.wav")
+    r = sr.Recognizer()
+
+    # 24 MB target leaves a small buffer under Whisper's 25 MB request limit.
+    chunks = audio.split(max_bytes=24 * 1024 * 1024, silence_aware=True)
+    text = " ".join(r.recognize_openai(c, model="whisper-1") for c in chunks)
 
 ``audiodata_instance.get_raw_data(convert_rate: Union[int, None] = None, convert_width: Union[int, None] = None) -> bytes``
 ---------------------------------------------------------------------------------------------------------------------------

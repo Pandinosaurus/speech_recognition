@@ -21,9 +21,32 @@ SpeechRecognition
     :target: https://travis-ci.org/Uberi/speech_recognition
     :alt: Continuous Integration Test Results
 
+.. image:: https://deepwiki.com/badge.svg
+    :target: https://deepwiki.com/Uberi/speech_recognition
+    :alt: Ask DeepWiki
+
+.. image:: https://www.gstatic.com/_/boq-sdlc-agents-ui/_/r/Mvosg4klCA4.svg
+    :target: https://codewiki.google/github.com/Uberi/speech_recognition
+    :alt: Ask Code Wiki
+    :height: 20px
+
+.. image:: https://img.shields.io/badge/docs-Mintlify-0ea5e9?logo=mintlify&logoColor=white
+    :target: https://mintlify.com/Uberi/speech_recognition
+    :alt: Mintlify Docs (Auto generated)
+
+.. image:: https://img.shields.io/badge/Docs-Context7-6C47FF
+    :target: https://context7.com/uberi/speech_recognition
+    :alt: Context7
+
 Library for performing speech recognition, with support for several engines and APIs, online and offline.
 
-**UPDATE 2022-02-09**: Hey everyone! This project started as a tech demo, but these days it needs more time than I have to keep up with all the PRs and issues. Therefore, I'd like to put out an **open invite for collaborators** - just reach out at me@anthonyz.ca if you're interested!
+Recall.ai - Meeting Transcription API
+-------------------------------------
+
+If you’re working with speech detection or transcription for meetings, consider checking out `Recall.ai <https://www.recall.ai/product/meeting-transcription-api?utm_source=github&utm_medium=sponsorship&utm_campaign=uberi-speech_recognition>`__, an API that works with Zoom, Google Meet, Microsoft Teams, and more. Recall.ai diarizes by pulling the speaker data and separate audio streams from the meeting platforms, which means 100% accurate speaker diarization with actual speaker names and speaker emails.
+
+Getting Started
+---------------
 
 Speech recognition engine/API support:
 
@@ -32,12 +55,16 @@ Speech recognition engine/API support:
 * `Google Cloud Speech API <https://cloud.google.com/speech/>`__
 * `Wit.ai <https://wit.ai/>`__
 * `Microsoft Azure Speech <https://azure.microsoft.com/en-us/services/cognitive-services/speech/>`__
-* `Microsoft Bing Voice Recognition (Deprecated) <https://www.microsoft.com/cognitive-services/en-us/speech-api>`__
 * `Houndify API <https://houndify.com/>`__
 * `IBM Speech to Text <http://www.ibm.com/smarterplanet/us/en/ibmwatson/developercloud/speech-to-text.html>`__
 * `Snowboy Hotword Detection <https://snowboy.kitt.ai/>`__ (works offline)
 * `Tensorflow <https://www.tensorflow.org/>`__
 * `Vosk API <https://github.com/alphacep/vosk-api/>`__ (works offline)
+* `OpenAI whisper <https://github.com/openai/whisper>`__ (works offline)
+* `OpenAI Transcription API <https://platform.openai.com/docs/guides/speech-to-text>`__
+    * OpenAI compatible self-hosted endpoints (e.g. vLLM, Ollama)
+* `Groq Whisper API <https://console.groq.com/docs/speech-to-text>`__
+* `Cohere Transcribe API <https://docs.cohere.com/docs/transcribe>`__
 
 **Quickstart:** ``pip install SpeechRecognition``. See the "Installing" section for more details.
 
@@ -55,8 +82,6 @@ Library Reference
 The `library reference <https://github.com/Uberi/speech_recognition/blob/master/reference/library-reference.rst>`__ documents every publicly accessible object in the library. This document is also included under ``reference/library-reference.rst``.
 
 See `Notes on using PocketSphinx <https://github.com/Uberi/speech_recognition/blob/master/reference/pocketsphinx.rst>`__ for information about installing languages, compiling PocketSphinx, and building language packs from online resources. This document is also included under ``reference/pocketsphinx.rst``.
-
-You have to install Vosk models for using Vosk. `Here <https://alphacephei.com/vosk/models>`__ are models avaiable. You have to place them in models folder of your project, like "your-project-folder/models/your-vosk-model"
 
 Examples
 --------
@@ -80,23 +105,28 @@ The easiest way to install this is using ``pip install SpeechRecognition``.
 
 Otherwise, download the source distribution from `PyPI <https://pypi.python.org/pypi/SpeechRecognition/>`__, and extract the archive.
 
-In the folder, run ``python setup.py install``.
+In the folder, run ``python -m pip install .``.
 
 Requirements
 ------------
 
 To use all of the functionality of the library, you should have:
 
-* **Python** 2.6, 2.7, or 3.3+ (required)
+* **Python** 3.10+ (required)
 * **PyAudio** 0.2.11+ (required only if you need to use microphone input, ``Microphone``)
 * **PocketSphinx** (required only if you need to use the Sphinx recognizer, ``recognizer_instance.recognize_sphinx``)
 * **Google API Client Library for Python** (required only if you need to use the Google Cloud Speech API, ``recognizer_instance.recognize_google_cloud``)
 * **FLAC encoder** (required only if the system is not x86-based Windows/Linux/OS X)
 * **Vosk** (required only if you need to use Vosk API speech recognition ``recognizer_instance.recognize_vosk``)
+* **Whisper** (required only if you need to use Whisper ``recognizer_instance.recognize_whisper``)
+* **Faster Whisper** (required only if you need to use Faster Whisper ``recognizer_instance.recognize_faster_whisper``)
+* **openai** (required only if you need to use OpenAI Transcription API speech recognition ``recognizer_instance.recognize_openai``)
+    * includes OpenAI compatible self-hosted endpoints (e.g. vLLM, Ollama)
+* **groq** (required only if you need to use Groq Whisper API speech recognition ``recognizer_instance.recognize_groq``)
+* **cohere** (required only if you need to use Cohere Transcribe API speech recognition ``recognizer_instance.recognize_cohere_api``; install with ``pip install SpeechRecognition[cohere-api]``. Set ``CO_API_KEY`` as documented by the Cohere SDK.)
 
 The following requirements are optional, but can improve or extend functionality in some situations:
 
-* On Python 2, and only on Python 2, some functions (like ``recognizer_instance.recognize_bing``) will run slower if you do not have **Monotonic for Python 2** installed.
 * If using CMU Sphinx, you may want to `install additional language packs <https://github.com/Uberi/speech_recognition/blob/master/reference/pocketsphinx.rst#installing-other-languages>`__ to support languages like International French or Mandarin Chinese.
 
 The following sections go over the details of each requirement.
@@ -104,7 +134,7 @@ The following sections go over the details of each requirement.
 Python
 ~~~~~~
 
-The first software requirement is `Python 2.6, 2.7, or Python 3.3+ <https://www.python.org/download/releases/>`__. This is required to use the library.
+The first software requirement is `Python 3.10+ <https://www.python.org/downloads/>`__. This is required to use the library.
 
 PyAudio (for microphone users)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -115,22 +145,18 @@ If not installed, everything in the library will still work, except attempting t
 
 The installation instructions on the PyAudio website are quite good - for convenience, they are summarized below:
 
-* On Windows, install PyAudio using `Pip <https://pip.readthedocs.org/>`__: execute ``pip install pyaudio`` in a terminal.
+* On Windows, install with PyAudio using `Pip <https://pip.readthedocs.org/>`__: execute ``pip install SpeechRecognition[audio]`` in a terminal.
 * On Debian-derived Linux distributions (like Ubuntu and Mint), install PyAudio using `APT <https://wiki.debian.org/Apt>`__: execute ``sudo apt-get install python-pyaudio python3-pyaudio`` in a terminal.
-    * If the version in the repositories is too old, install the latest release using Pip: execute ``sudo apt-get install portaudio19-dev python-all-dev python3-all-dev && sudo pip install pyaudio`` (replace ``pip`` with ``pip3`` if using Python 3).
-* On OS X, install PortAudio using `Homebrew <http://brew.sh/>`__: ``brew install portaudio``. Then, install PyAudio using `Pip <https://pip.readthedocs.org/>`__: ``pip install pyaudio``.
-* On other POSIX-based systems, install the ``portaudio19-dev`` and ``python-all-dev`` (or ``python3-all-dev`` if using Python 3) packages (or their closest equivalents) using a package manager of your choice, and then install PyAudio using `Pip <https://pip.readthedocs.org/>`__: ``pip install pyaudio`` (replace ``pip`` with ``pip3`` if using Python 3).
+    * If the version in the repositories is too old, install the latest release using Pip: execute ``sudo apt-get install portaudio19-dev python-all-dev python3-all-dev && sudo pip install SpeechRecognition[audio]`` (replace ``pip`` with ``pip3`` if using Python 3).
+* On OS X, install PortAudio using `Homebrew <http://brew.sh/>`__: ``brew install portaudio``. Then, install with PyAudio using `Pip <https://pip.readthedocs.org/>`__: ``pip install SpeechRecognition[audio]``.
+* On other POSIX-based systems, install the ``portaudio19-dev`` and ``python-all-dev`` (or ``python3-all-dev`` if using Python 3) packages (or their closest equivalents) using a package manager of your choice, and then install with PyAudio using `Pip <https://pip.readthedocs.org/>`__: ``pip install SpeechRecognition[audio]`` (replace ``pip`` with ``pip3`` if using Python 3).
 
-PyAudio `wheel packages <https://pypi.python.org/pypi/wheel>`__ for common 64-bit Python versions on Windows and Linux are included for convenience, under the ``third-party/`` `directory <https://github.com/Uberi/speech_recognition/tree/master/third-party>`__ in the repository root. To install, simply run ``pip install wheel`` followed by ``pip install ./third-party/WHEEL_FILENAME`` (replace ``pip`` with ``pip3`` if using Python 3) in the repository `root directory <https://github.com/Uberi/speech_recognition>`__.
+PocketSphinx (for Sphinx users)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-PocketSphinx-Python (for Sphinx users)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+`PocketSphinx <https://github.com/cmusphinx/pocketsphinx>`__ is **required if and only if you want to use the Sphinx recognizer** (``recognizer_instance.recognize_sphinx``).
 
-`PocketSphinx-Python <https://github.com/bambocher/pocketsphinx-python>`__ is **required if and only if you want to use the Sphinx recognizer** (``recognizer_instance.recognize_sphinx``).
-
-PocketSphinx-Python `wheel packages <https://pypi.python.org/pypi/wheel>`__ for 64-bit Python 2.7, 3.4, and 3.5 on Windows are included for convenience, under the ``third-party/`` `directory <https://github.com/Uberi/speech_recognition/tree/master/third-party>`__. To install, simply run ``pip install wheel`` followed by ``pip install ./third-party/WHEEL_FILENAME`` (replace ``pip`` with ``pip3`` if using Python 3) in the SpeechRecognition folder.
-
-On Linux and other POSIX systems (such as OS X), follow the instructions under "Building PocketSphinx-Python from source" in `Notes on using PocketSphinx <https://github.com/Uberi/speech_recognition/blob/master/reference/pocketsphinx.rst>`__ for installation instructions.
+On Linux and other POSIX systems (such as OS X), run ``pip install SpeechRecognition[pocketsphinx]``. Follow the instructions under "Building PocketSphinx-Python from source" in `Notes on using PocketSphinx <https://github.com/Uberi/speech_recognition/blob/master/reference/pocketsphinx.rst>`__ for installation instructions.
 
 Note that the versions available in most package repositories are outdated and will not work with the bundled language data. Using the bundled wheel packages or building from source is recommended.
 
@@ -140,20 +166,27 @@ Vosk (for Vosk users)
 ~~~~~~~~~~~~~~~~~~~~~
 Vosk API is **required if and only if you want to use Vosk recognizer** (``recognizer_instance.recognize_vosk``).
 
-You can install it with ``python3 -m pip install vosk``.
+You can install it with ``python3 -m pip install SpeechRecognition[vosk]``.
 
 You also have to install Vosk Models:
 
-`Here <https://alphacephei.com/vosk/models>`__ are models avaiable for download. You have to place them in models folder of your project, like "your-project-folder/models/your-vosk-model"
+`Here <https://alphacephei.com/vosk/models>`__ are models available for download. You have to place them in the ``model`` directory of your project, like "your-project-folder/model".
+You can also run ``sprc download vosk`` to download the default model.
 
-Google Cloud Speech Library for Python (for Google Cloud Speech API users)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Google Cloud Speech Library for Python (for Google Cloud Speech-to-Text API users)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-`Google Cloud Speech library for Python <https://cloud.google.com/speech-to-text/docs/quickstart>`__ is required if and only if you want to use the Google Cloud Speech API (``recognizer_instance.recognize_google_cloud``).
+The library `google-cloud-speech <https://pypi.org/project/google-cloud-speech/>`__ is **required if and only if you want to use Google Cloud Speech-to-Text API** (``recognizer_instance.recognize_google_cloud``).
+You can install it with ``python3 -m pip install SpeechRecognition[google-cloud]``.
+(ref: `official installation instructions <https://cloud.google.com/speech-to-text/docs/transcribe-client-libraries#client-libraries-install-python>`__)
 
-If not installed, everything in the library will still work, except calling ``recognizer_instance.recognize_google_cloud`` will raise an ``RequestError``.
+**Prerequisite**: Create local authentication credentials for your Google account
 
-According to the `official installation instructions <https://cloud.google.com/speech-to-text/docs/quickstart>`__, the recommended way to install this is using `Pip <https://pip.readthedocs.org/>`__: execute ``pip install google-cloud-speech`` (replace ``pip`` with ``pip3`` if using Python 3).
+* Digest: `Before you begin (Transcribe speech to text by using client libraries) <https://cloud.google.com/speech-to-text/docs/transcribe-client-libraries#before-you-begin>`__
+* `Set up Speech-to-Text <https://cloud.google.com/speech-to-text/docs/before-you-begin>`__
+* `User credentials (Set up ADC for a local development environment) <https://cloud.google.com/docs/authentication/set-up-adc-local-dev-environment#local-user-cred>`__
+
+Currently only `V1 <https://cloud.google.com/speech-to-text/docs/quickstart>`__ is supported. (`V2 <https://cloud.google.com/speech-to-text/v2/docs/quickstart>`__ is not supported)
 
 FLAC (for some systems)
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -162,16 +195,43 @@ A `FLAC encoder <https://xiph.org/flac/>`__ is required to encode the audio data
 
 Otherwise, ensure that you have the ``flac`` command line tool, which is often available through the system package manager. For example, this would usually be ``sudo apt-get install flac`` on Debian-derivatives, or ``brew install flac`` on OS X with Homebrew.
 
-Monotonic for Python 2 (for faster operations in some functions on Python 2)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Whisper (for Whisper users)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Whisper is **required if and only if you want to use whisper** (``recognizer_instance.recognize_whisper``).
 
-On Python 2, and only on Python 2, if you do not install the `Monotonic for Python 2 <https://github.com/atdt/monotonic>`__ library, some functions will run slower than they otherwise could (though everything will still work correctly).
+You can install it with ``python3 -m pip install SpeechRecognition[whisper-local]``.
 
-On Python 3, that library's functionality is built into the Python standard library, which makes it unnecessary.
+Faster Whisper (for Faster Whisper users)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-This is because monotonic time is necessary to handle cache expiry properly in the face of system time changes and other time-related issues. If monotonic time functionality is not available, then things like access token requests will not be cached.
+The library `faster-whisper <https://pypi.org/project/faster-whisper/>`__ is **required if and only if you want to use Faster Whisper** (``recognizer_instance.recognize_faster_whisper``).
 
-To install, use `Pip <https://pip.readthedocs.org/>`__: execute ``pip install monotonic`` in a terminal.
+You can install it with ``python3 -m pip install SpeechRecognition[faster-whisper]``.
+
+OpenAI Transcription API (for OpenAI Transcription API users)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The library `openai <https://pypi.org/project/openai/>`__ is **required if and only if you want to use OpenAI Transcription API** (``recognizer_instance.recognize_openai``).
+
+You can install it with ``python3 -m pip install SpeechRecognition[openai]``.
+
+Please set the environment variable ``OPENAI_API_KEY`` before calling ``recognizer_instance.recognize_openai``.
+
+OpenAI-compatible self-hosted Whisper endpoints (for users of vLLM, Ollama, etc.)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``recognizer_instance.recognize_openai`` also supports OpenAI-compatible endpoints.
+
+Set ``OPENAI_BASE_URL`` to point to your custom endpoint with dummy ``OPENAI_API_KEY``.
+
+Groq Whisper API (for Groq Whisper API users)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The library `groq <https://pypi.org/project/groq/>`__ is **required if and only if you want to use Groq Whisper API** (``recognizer_instance.recognize_groq``).
+
+You can install it with ``python3 -m pip install SpeechRecognition[groq]``.
+
+Please set the environment variable ``GROQ_API_KEY`` before calling ``recognizer_instance.recognize_groq``.
 
 Troubleshooting
 ---------------
@@ -195,7 +255,7 @@ The solution is to decrease this threshold, or call ``recognizer_instance.adjust
 The recognizer doesn't understand my particular language/dialect.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Try setting the recognition language to your language/dialect. To do this, see the documentation for ``recognizer_instance.recognize_sphinx``, ``recognizer_instance.recognize_google``, ``recognizer_instance.recognize_wit``, ``recognizer_instance.recognize_bing``, ``recognizer_instance.recognize_api``, ``recognizer_instance.recognize_houndify``, and ``recognizer_instance.recognize_ibm``.
+Try setting the recognition language to your language/dialect. To do this, see the documentation for ``recognizer_instance.recognize_sphinx``, ``recognizer_instance.recognize_google``, ``recognizer_instance.recognize_wit``, ``recognizer_instance.recognize_api``, ``recognizer_instance.recognize_houndify``, and ``recognizer_instance.recognize_ibm``.
 
 For example, if your language/dialect is British English, it is better to use ``"en-GB"`` as the language rather than ``"en-US"``.
 
@@ -235,27 +295,6 @@ As the error says, the program doesn't know which microphone to use.
 
 To proceed, either use ``Microphone(device_index=MICROPHONE_INDEX, ...)`` instead of ``Microphone(...)``, or set a default microphone in your OS. You can obtain possible values of ``MICROPHONE_INDEX`` using the code in the troubleshooting entry right above this one.
 
-The code examples raise ``UnicodeEncodeError: 'ascii' codec can't encode character`` when run.
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-When you're using Python 2, and your language uses non-ASCII characters, and the terminal or file-like object you're printing to only supports ASCII, an error is raised when trying to write non-ASCII characters.
-
-This is because in Python 2, ``recognizer_instance.recognize_sphinx``, ``recognizer_instance.recognize_google``, ``recognizer_instance.recognize_wit``, ``recognizer_instance.recognize_bing``, ``recognizer_instance.recognize_api``, ``recognizer_instance.recognize_houndify``, and ``recognizer_instance.recognize_ibm`` return unicode strings (``u"something"``) rather than byte strings (``"something"``). In Python 3, all strings are unicode strings.
-
-To make printing of unicode strings work in Python 2 as well, replace all print statements in your code of the following form:
-
-    .. code:: python
-
-        print SOME_UNICODE_STRING
-
-With the following:
-
-    .. code:: python
-
-        print SOME_UNICODE_STRING.encode("utf8")
-
-This change, however, will prevent the code from working in Python 3.
-
 The program doesn't run when compiled with `PyInstaller <https://github.com/pyinstaller/pyinstaller/wiki>`__.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -279,78 +318,10 @@ Installing `FLAC for OS X <https://xiph.org/flac/download.html>`__ directly from
 
 Installing FLAC using `Homebrew <http://brew.sh/>`__ ensures that the search path is correctly updated. First, ensure you have Homebrew, then run ``brew install flac`` to install the necessary files.
 
-Developing
-----------
+Contributing
+------------
 
-To hack on this library, first make sure you have all the requirements listed in the "Requirements" section.
-
--  Most of the library code lives in ``speech_recognition/__init__.py``.
--  Examples live under the ``examples/`` `directory <https://github.com/Uberi/speech_recognition/tree/master/examples>`__, and the demo script lives in ``speech_recognition/__main__.py``.
--  The FLAC encoder binaries are in the ``speech_recognition/`` `directory <https://github.com/Uberi/speech_recognition/tree/master/speech_recognition>`__.
--  Documentation can be found in the ``reference/`` `directory <https://github.com/Uberi/speech_recognition/tree/master/reference>`__.
--  Third-party libraries, utilities, and reference material are in the ``third-party/`` `directory <https://github.com/Uberi/speech_recognition/tree/master/third-party>`__.
-
-To install/reinstall the library locally, run ``python setup.py install`` in the project `root directory <https://github.com/Uberi/speech_recognition>`__.
-
-Before a release, the version number is bumped in ``README.rst`` and ``speech_recognition/__init__.py``. Version tags are then created using ``git config gpg.program gpg2 && git config user.signingkey DB45F6C431DE7C2DCD99FF7904882258A4063489 && git tag -s VERSION_GOES_HERE -m "Version VERSION_GOES_HERE"``.
-
-Releases are done by running ``make-release.sh VERSION_GOES_HERE`` to build the Python source packages, sign them, and upload them to PyPI.
-
-Testing
-~~~~~~~
-
-To run all the tests:
-
-.. code:: bash
-
-    python -m unittest discover --verbose
-
-Testing is also done automatically by TravisCI, upon every push. To set up the environment for offline/local Travis-like testing on a Debian-like system:
-
-.. code:: bash
-
-    sudo docker run --volume "$(pwd):/speech_recognition" --interactive --tty quay.io/travisci/travis-python:latest /bin/bash
-    su - travis && cd /speech_recognition
-    sudo apt-get update && sudo apt-get install swig libpulse-dev
-    pip install --user pocketsphinx monotonic && pip install --user flake8 rstcheck && pip install --user -e .
-    python -m unittest discover --verbose # run unit tests
-    python -m flake8 --ignore=E501,E701 speech_recognition tests examples setup.py # ignore errors for long lines and multi-statement lines
-    python -m rstcheck README.rst reference/*.rst # ensure RST is well-formed
-
-FLAC Executables
-~~~~~~~~~~~~~~~~
-
-The included ``flac-win32`` executable is the `official FLAC 1.3.2 32-bit Windows binary <http://downloads.xiph.org/releases/flac/flac-1.3.2-win.zip>`__.
-
-The included ``flac-linux-x86`` and ``flac-linux-x86_64`` executables are built from the `FLAC 1.3.2 source code <http://downloads.xiph.org/releases/flac/flac-1.3.2.tar.xz>`__ with `Manylinux <https://github.com/pypa/manylinux>`__ to ensure that it's compatible with a wide variety of distributions.
-
-The built FLAC executables should be bit-for-bit reproducible. To rebuild them, run the following inside the project directory on a Debian-like system:
-
-.. code:: bash
-
-    # download and extract the FLAC source code
-    cd third-party
-    sudo apt-get install --yes docker.io
-
-    # build FLAC inside the Manylinux i686 Docker image
-    tar xf flac-1.3.2.tar.xz
-    sudo docker run --tty --interactive --rm --volume "$(pwd):/root" quay.io/pypa/manylinux1_i686:latest bash
-        cd /root/flac-1.3.2
-        ./configure LDFLAGS=-static # compiler flags to make a static build
-        make
-    exit
-    cp flac-1.3.2/src/flac/flac ../speech_recognition/flac-linux-x86 && sudo rm -rf flac-1.3.2/
-
-    # build FLAC inside the Manylinux x86_64 Docker image
-    tar xf flac-1.3.2.tar.xz
-    sudo docker run --tty --interactive --rm --volume "$(pwd):/root" quay.io/pypa/manylinux1_x86_64:latest bash
-        cd /root/flac-1.3.2
-        ./configure LDFLAGS=-static # compiler flags to make a static build
-        make
-    exit
-    cp flac-1.3.2/src/flac/flac ../speech_recognition/flac-linux-x86_64 && sudo rm -r flac-1.3.2/
-
-The included ``flac-mac`` executable is extracted from `xACT 2.39 <http://xact.scottcbrown.org/>`__, which is a frontend for FLAC 1.3.2 that conveniently includes binaries for all of its encoders. Specifically, it is a copy of ``xACT 2.39/xACT.app/Contents/Resources/flac`` in ``xACT2.39.zip``.
+See `CONTRIBUTING.rst <https://github.com/Uberi/speech_recognition/blob/master/CONTRIBUTING.rst>`__ for information on setting up a development environment, running tests, and contribution guidelines.
 
 Authors
 -------
@@ -374,25 +345,25 @@ Please report bugs and suggestions at the `issue tracker <https://github.com/Ube
 
 How to cite this library (APA style):
 
-    Zhang, A. (2017). Speech Recognition (Version 3.8) [Software]. Available from https://github.com/Uberi/speech_recognition#readme.
+    Zhang, A. (2017). Speech Recognition (Version 3.11) [Software]. Available from https://github.com/Uberi/speech_recognition#readme.
 
 How to cite this library (Chicago style):
 
-    Zhang, Anthony. 2017. *Speech Recognition* (version 3.8).
+    Zhang, Anthony. 2017. *Speech Recognition* (version 3.11).
 
 Also check out the `Python Baidu Yuyin API <https://github.com/DelightRun/PyBaiduYuyin>`__, which is based on an older version of this project, and adds support for `Baidu Yuyin <http://yuyin.baidu.com/>`__. Note that Baidu Yuyin is only available inside China.
 
 License
 -------
 
-Copyright 2014-2017 `Anthony Zhang (Uberi) <http://anthonyz.ca/>`__. The source code for this library is available online at `GitHub <https://github.com/Uberi/speech_recognition>`__.
+Copyright 2014- `Anthony Zhang (Uberi) <http://anthonyz.ca/>`__. The source code for this library is available online at `GitHub <https://github.com/Uberi/speech_recognition>`__.
 
 SpeechRecognition is made available under the 3-clause BSD license. See ``LICENSE.txt`` in the project's `root directory <https://github.com/Uberi/speech_recognition>`__ for more information.
 
 For convenience, all the official distributions of SpeechRecognition already include a copy of the necessary copyright notices and licenses. In your project, you can simply **say that licensing information for SpeechRecognition can be found within the SpeechRecognition README, and make sure SpeechRecognition is visible to users if they wish to see it**.
 
-SpeechRecognition distributes source code, binaries, and language files from `CMU Sphinx <http://cmusphinx.sourceforge.net/>`__. These files are BSD-licensed and redistributable as long as copyright notices are correctly retained. See ``speech_recognition/pocketsphinx-data/*/LICENSE*.txt`` and ``third-party/LICENSE-Sphinx.txt`` for license details for individual parts.
-
-SpeechRecognition distributes source code and binaries from `PyAudio <http://people.csail.mit.edu/hubert/pyaudio/>`__. These files are MIT-licensed and redistributable as long as copyright notices are correctly retained. See ``third-party/LICENSE-PyAudio.txt`` for license details.
+SpeechRecognition distributes language files from `CMU Sphinx <http://cmusphinx.sourceforge.net/>`__. These files are BSD-licensed and redistributable as long as copyright notices are correctly retained. See ``speech_recognition/pocketsphinx-data/*/LICENSE*.txt`` for license details for individual parts.
 
 SpeechRecognition distributes binaries from `FLAC <https://xiph.org/flac/>`__ - ``speech_recognition/flac-win32.exe``, ``speech_recognition/flac-linux-x86``, and ``speech_recognition/flac-mac``. These files are GPLv2-licensed and redistributable, as long as the terms of the GPL are satisfied. The FLAC binaries are an `aggregate <https://www.gnu.org/licenses/gpl-faq.html#MereAggregation>`__ of `separate programs <https://www.gnu.org/licenses/gpl-faq.html#NFUseGPLPlugins>`__, so these GPL restrictions do not apply to the library or your programs that use the library, only to FLAC itself. See ``LICENSE-FLAC.txt`` for license details.
+
+

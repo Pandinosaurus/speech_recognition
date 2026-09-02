@@ -2,6 +2,8 @@
 
 # NOTE: this example requires PyAudio because it uses the Microphone class
 
+import os
+
 import speech_recognition as sr
 
 # obtain audio from the microphone
@@ -30,9 +32,9 @@ except sr.RequestError as e:
     print("Could not request results from Google Speech Recognition service; {0}".format(e))
 
 # recognize speech using Google Cloud Speech
-GOOGLE_CLOUD_SPEECH_CREDENTIALS = r"""INSERT THE CONTENTS OF THE GOOGLE CLOUD SPEECH JSON CREDENTIALS FILE HERE"""
+# Before run, create local authentication credentials (``gcloud auth application-default login``)
 try:
-    print("Google Cloud Speech thinks you said " + r.recognize_google_cloud(audio, credentials_json=GOOGLE_CLOUD_SPEECH_CREDENTIALS))
+    print("Google Cloud Speech thinks you said " + r.recognize_google_cloud(audio))
 except sr.UnknownValueError:
     print("Google Cloud Speech could not understand audio")
 except sr.RequestError as e:
@@ -46,15 +48,6 @@ except sr.UnknownValueError:
     print("Wit.ai could not understand audio")
 except sr.RequestError as e:
     print("Could not request results from Wit.ai service; {0}".format(e))
-
-# recognize speech using Microsoft Bing Voice Recognition
-BING_KEY = "INSERT BING API KEY HERE"  # Microsoft Bing Voice Recognition API keys 32-character lowercase hexadecimal strings
-try:
-    print("Microsoft Bing Voice Recognition thinks you said " + r.recognize_bing(audio, key=BING_KEY))
-except sr.UnknownValueError:
-    print("Microsoft Bing Voice Recognition could not understand audio")
-except sr.RequestError as e:
-    print("Could not request results from Microsoft Bing Voice Recognition service; {0}".format(e))
 
 # recognize speech using Microsoft Azure Speech
 AZURE_SPEECH_KEY = "INSERT AZURE SPEECH API KEY HERE"  # Microsoft Speech API keys 32-character lowercase hexadecimal strings
@@ -84,3 +77,22 @@ except sr.UnknownValueError:
     print("IBM Speech to Text could not understand audio")
 except sr.RequestError as e:
     print("Could not request results from IBM Speech to Text service; {0}".format(e))
+
+# recognize speech using whisper
+try:
+    print("Whisper thinks you said " + r.recognize_whisper(audio, language="english"))
+except sr.UnknownValueError:
+    print("Whisper could not understand audio")
+except sr.RequestError as e:
+    print(f"Could not request results from Whisper; {e}")
+
+# recognize speech using the OpenAI Transcription API
+OPENAI_API_KEY = "INSERT OPENAI API KEY HERE"
+os.environ["OPENAI_API_KEY"] = OPENAI_API_KEY
+try:
+    print(
+        "OpenAI Transcription API thinks you said "
+        f"{r.recognize_openai(audio)}"
+    )
+except sr.RequestError as e:
+    print(f"Could not request results from OpenAI Transcription API; {e}")

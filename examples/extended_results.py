@@ -10,11 +10,9 @@ from os import path
 AUDIO_FILE = path.join(path.dirname(path.realpath(__file__)), "english.wav")
 # AUDIO_FILE = path.join(path.dirname(path.realpath(__file__)), "french.aiff")
 # AUDIO_FILE = path.join(path.dirname(path.realpath(__file__)), "chinese.flac")
+audio = sr.AudioData.from_file(AUDIO_FILE)
 
-# use the audio file as the audio source
 r = sr.Recognizer()
-with sr.AudioFile(AUDIO_FILE) as source:
-    audio = r.record(source)  # read the entire audio file
 
 # recognize speech using Sphinx
 try:
@@ -37,10 +35,10 @@ except sr.RequestError as e:
     print("Could not request results from Google Speech Recognition service; {0}".format(e))
 
 # recognize speech using Google Cloud Speech
-GOOGLE_CLOUD_SPEECH_CREDENTIALS = r"""INSERT THE CONTENTS OF THE GOOGLE CLOUD SPEECH JSON CREDENTIALS FILE HERE"""
+# Before run, create local authentication credentials (``gcloud auth application-default login``)
 try:
     print("Google Cloud Speech recognition results:")
-    pprint(r.recognize_google_cloud(audio, credentials_json=GOOGLE_CLOUD_SPEECH_CREDENTIALS, show_all=True))  # pretty-print the recognition result
+    pprint(r.recognize_google_cloud(audio, show_all=True))  # pretty-print the recognition result
 except sr.UnknownValueError:
     print("Google Cloud Speech could not understand audio")
 except sr.RequestError as e:
@@ -55,16 +53,6 @@ except sr.UnknownValueError:
     print("Wit.ai could not understand audio")
 except sr.RequestError as e:
     print("Could not request results from Wit.ai service; {0}".format(e))
-
-# recognize speech using Microsoft Bing Voice Recognition
-BING_KEY = "INSERT BING API KEY HERE"  # Microsoft Bing Voice Recognition API keys 32-character lowercase hexadecimal strings
-try:
-    print("Bing recognition results:")
-    pprint(r.recognize_bing(audio, key=BING_KEY, show_all=True))
-except sr.UnknownValueError:
-    print("Microsoft Bing Voice Recognition could not understand audio")
-except sr.RequestError as e:
-    print("Could not request results from Microsoft Bing Voice Recognition service; {0}".format(e))
 
 # recognize speech using Houndify
 HOUNDIFY_CLIENT_ID = "INSERT HOUNDIFY CLIENT ID HERE"  # Houndify client IDs are Base64-encoded strings
